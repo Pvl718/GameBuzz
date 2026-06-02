@@ -513,7 +513,6 @@ cat root.txt
 | ffuf | Virtual host & directory fuzzing | https://github.com/ffuf/ffuf |
 | Burp Suite | HTTP traffic interception & analysis | https://portswigger.net/burp |
 | Python (pickle) | Crafting deserialization RCE payload | https://docs.python.org/3/library/pickle.html |
-| curl | File upload & /fetch endpoint trigger | https://curl.se |
 | Penelope | Reverse shell handler with PTY upgrade | https://github.com/brightio/penelope |
 | CrackStation | MD5 hash cracking | https://crackstation.net |
 | knock | Port knocking client | http://www.zeroflux.org/projects/knock |
